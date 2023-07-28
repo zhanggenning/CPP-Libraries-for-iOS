@@ -1,10 +1,10 @@
-# 开源C++库 iOS 版
+# 开源C++库 (iOS 版)
 
 ## 1. 简介
 
-主要保存开源C++的库，交叉编译后可以在iOS平台的静态库。
+交叉编译开源C++库的源码，生成可以在iOS平台的静态库，所有库最低支持iOS 13.0。
 
-开源版本：
+相关C++库版本：
 
 * exiv2:  0.27.7
 * lcms2:  2.15
@@ -103,5 +103,58 @@ libraw:
 
 
 
-## 4. Demo使用
+## 4. Demo集成
+
+demo使用静态库需要在Xcode中做如下通用配置，然后再根据各库的特点再分别配置：
+
+```objc
+// 1. 设置静态库查找路径和头文件查找路径
+Build Setting -> Lirary Search Path -> [静态库路径]
+Build Setting -> Header Search Path -> [头文件路径]
+
+// 2. M系列芯片Mac需要配置模拟器使用arm64架构
+Build Setting -> Excluded Architectures -> Debug -> Any iOS Simulator SDK [arm64]
+
+// 3. 添加依赖系统库 (libz.tbd, libc++.tbd)
+Build Phases -> Link Binary With Libraries -> [libz.tbd]
+Build Phases -> Link Binary With Libraries -> [libc++.tbd]
+
+// 4. c++模块化编译(非必需，加上之后提升编译速度)
+Build Setting -> Apple Clang - Address Sanitizer -> Other C++ Flags [-fcxx-modules]
+
+// 5. 添加静态库
+Build Phases -> Link Binary With Libraries -> [xxx.a]
+```
+
+### 4.1 lcms2集成
+
+```objc
+// 添加自定义宏 CMS_NO_REGISTER_KEYWORD（禁用头文件中 register）
+Build Setting -> Apple Clang - Preprocessing -> Preprocessor Macros [CMS_NO_REGISTER_KEYWORD]
+```
+
+### 4.2 openmp 集成
+
+```objc
+// Other Linker Flags 添加 -XClang -openmp
+Build Setting -> Linking -> Other Linker Flags [-XClang -openmp]
+```
+
+### 4.3 exiv2 集成
+
+```objective-c
+// 1.（0.27.7 ）版本使用的是 c++14标准，因此Xcode中的C++标准设置为C++14
+Build Settings -> Apple Clang - Language - C++ -> C++ Language Dialect [C++14 或者 GNU++14]
+
+// 2. 依赖系统 libiconv.tbd
+Build Phases -> Link Binary With Libraries -> [libiconv.tbd]
+  
+// 3. 头文件引入方式
+#import "exiv2/exiv2.hpp"
+```
+
+### 4.4 libraw 集成
+
+* libraw 如果在编译时开了 --enable-openmp，那么demo里一定要先链接openmp，再链接libraw
+* libraw 如果在编译时开了 --enable-lcms2，那么demo里一定要先链接lcms2，再链接libraw
 
