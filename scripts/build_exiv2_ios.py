@@ -76,7 +76,7 @@ def compile_library(arch):
     library = f'{build_root(arch)}/lib/{target}.a'
     if not os.path.exists(library):
         raise Exception('Compile code failed!', 1001)
-    header = f'{build_root(arch)}/include/exiv2'
+    header = f'{build_root(arch)}/include'
     return tools.export(arch, library, header, output_root)
 
 
